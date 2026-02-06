@@ -9,6 +9,7 @@ export const MOCK_ACCOUNTS: Account[] = [
     balance: 1250.5,
     color: "#4f46e5", // Indigo
     icon: "wallet",
+    is_included_in_balance: true,
     created_at: new Date().toISOString(),
   },
   {
@@ -19,6 +20,7 @@ export const MOCK_ACCOUNTS: Account[] = [
     balance: 5000.0,
     color: "#10b981", // Emerald
     icon: "piggy-bank",
+    is_included_in_balance: true,
     created_at: new Date().toISOString(),
   },
   {
@@ -29,6 +31,7 @@ export const MOCK_ACCOUNTS: Account[] = [
     balance: 150.0,
     color: "#f59e0b", // Amber
     icon: "banknote",
+    is_included_in_balance: true,
     created_at: new Date().toISOString(),
   },
 ];
