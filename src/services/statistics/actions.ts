@@ -1,11 +1,11 @@
 "use server";
 
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 
 export async function getStatistics(
   timeframe: "month" | "week" | "year" = "month",
 ) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

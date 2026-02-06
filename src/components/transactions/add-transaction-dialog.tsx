@@ -49,7 +49,7 @@ export function AddTransactionDialog() {
           <span className="hidden md:inline">Add Transaction</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Add Transaction</DialogTitle>
           <DialogDescription>

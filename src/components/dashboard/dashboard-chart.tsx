@@ -9,19 +9,17 @@ import {
   YAxis,
 } from "recharts";
 
-const data = [
-  { name: "Mon", income: 2400, expense: 1200 },
-  { name: "Tue", income: 1398, expense: 1900 },
-  { name: "Wed", income: 9800, expense: 2400 },
-  { name: "Thu", income: 3908, expense: 2800 },
-  { name: "Fri", income: 4800, expense: 2100 },
-  { name: "Sat", income: 3800, expense: 1500 },
-  { name: "Sun", income: 4300, expense: 2100 },
-];
+interface DashboardChartProps {
+  data: {
+    date: string;
+    income: number;
+    expense: number;
+  }[];
+}
 
-export function DashboardChart() {
+export function DashboardChart({ data }: DashboardChartProps) {
   return (
-    <div className="h-[300px] w-full mt-4">
+    <div className="h-75 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
           <defs>
@@ -35,11 +33,15 @@ export function DashboardChart() {
             </linearGradient>
           </defs>
           <XAxis
-            dataKey="name"
+            dataKey="date"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#888888", fontSize: 12 }}
+            tick={{ fill: "#888888", fontSize: 10 }}
             dy={10}
+            tickFormatter={(value) => {
+              const date = new Date(value);
+              return date.toLocaleDateString("en-US", { weekday: "short" });
+            }}
           />
           <YAxis hide />
           <Tooltip

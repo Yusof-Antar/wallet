@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 import { Account } from "@/types";
 
 export async function getAccounts() {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("accounts")
     .select("*")
@@ -18,7 +18,7 @@ export async function getAccounts() {
 export async function createAccount(
   account: Omit<Account, "id" | "created_at" | "user_id">,
 ) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

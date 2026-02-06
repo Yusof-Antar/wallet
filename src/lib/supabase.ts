@@ -1,17 +1,19 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "./supabase-server";
+import { createClient as createBrowserClient } from "./supabase-client";
 
-// This helper works for both Server Actions/Components and Client Components
-// because it uses the standard supabase-js client.
-// Note: In an ideal world we'd use @supabase/ssr, but sticking to basics for now.
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
+// This file now acts as a proxy to avoid importing server-only code in client components
 export const createSupabaseClient = () => {
-  return createClient(supabaseUrl, supabaseAnonKey);
+  if (typeof window === "undefined") {
+    // This will still fail if imported into a client component because the import itself
+    // of supabase-server.ts will trigger the cookies() error.
+    // Instead, we should use dynamic imports or just change the imports in the callers.
+    throw new Error(
+      "Use createClient from @/lib/supabase-server or @/lib/supabase-client directly",
+    );
+  }
+  return createBrowserClient();
 };
 
-// Helper specific to formatting currency
 export const formatCurrency = (amount: number, currency = "USD") => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 import { Transaction, Category } from "@/types";
 
 export async function getTransactions(limit = 10) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("transactions")
     .select("*, categories(*)")
@@ -19,7 +19,7 @@ export async function getTransactions(limit = 10) {
 export async function createTransaction(
   transaction: Omit<Transaction, "id" | "created_at" | "user_id">,
 ) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

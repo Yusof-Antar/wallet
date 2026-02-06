@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -50,7 +50,7 @@ export function AuthForm({ type }: AuthFormProps) {
     setError(null);
 
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createClient();
 
       if (type === "login") {
         const { error } = await supabase.auth.signInWithPassword({

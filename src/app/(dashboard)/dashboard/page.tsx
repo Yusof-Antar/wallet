@@ -66,7 +66,7 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DashboardChart />
+            <DashboardChart data={stats.chartData} />
           </CardContent>
         </Card>
         <Card className="col-span-3">
