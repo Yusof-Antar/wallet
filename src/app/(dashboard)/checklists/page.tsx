@@ -31,6 +31,7 @@ import {
   addChecklistItem,
 } from "@/services/checklists/actions";
 import { ChecklistItem } from "@/types";
+import { toast } from "sonner";
 
 export default function ChecklistsPage() {
   const [items, setItems] = useState<ChecklistItem[]>([]);
@@ -68,7 +69,9 @@ export default function ChecklistsPage() {
           item.id === id ? { ...item, is_completed: !currentStatus } : item,
         ),
       );
+      toast.success(currentStatus ? "Item unmarked" : "Item completed!");
     } catch (error) {
+      toast.error("Failed to update item.");
       console.error("Failed to toggle item:", error);
     }
   };
@@ -77,7 +80,9 @@ export default function ChecklistsPage() {
     try {
       await deleteChecklistItem(id);
       setItems(items.filter((item) => item.id !== id));
+      toast.success("Item deleted");
     } catch (error) {
+      toast.error("Failed to delete item.");
       console.error("Failed to delete item:", error);
     }
   };
@@ -100,7 +105,9 @@ export default function ChecklistsPage() {
         category: "",
         frequency: "monthly",
       });
+      toast.success("Item added to checklist!");
     } catch (error) {
+      toast.error("Failed to add item. Please try again.");
       console.error("Failed to add item:", error);
     } finally {
       setIsAdding(false);

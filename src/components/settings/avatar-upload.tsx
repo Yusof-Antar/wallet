@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { updateUserSettings } from "@/services/settings/actions";
+import { toast } from "sonner";
 
 interface AvatarUploadProps {
   currentUrl: string | null;
@@ -35,9 +36,11 @@ export function AvatarUpload({
     setIsSaving(true);
     try {
       await updateUserSettings({ avatar_url: url });
+      toast.success("Avatar updated!");
       onSuccess(url);
       setOpen(false);
     } catch (error) {
+      toast.error("Failed to update avatar.");
       console.error("Failed to update avatar:", error);
     } finally {
       setIsSaving(false);

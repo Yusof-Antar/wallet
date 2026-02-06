@@ -20,6 +20,7 @@ import {
 import { Profile } from "@/types";
 import { Loader2 } from "lucide-react";
 import { AvatarUpload } from "@/components/settings/avatar-upload";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -57,8 +58,9 @@ export default function SettingsPage() {
         full_name: name,
         currency: currency,
       });
-      // toast.success("Settings saved successfully");
+      toast.success("Settings saved successfully");
     } catch (err: any) {
+      toast.error(err.message || "Failed to save settings.");
       console.error("Failed to save settings:", err);
       setError(err.message || "Failed to save settings.");
     } finally {

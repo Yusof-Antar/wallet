@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase-client";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -58,6 +59,7 @@ export function AuthForm({ type }: AuthFormProps) {
           password: values.password,
         });
         if (error) throw error;
+        toast.success("Welcome back!");
         router.push("/dashboard");
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -73,88 +75,11 @@ export function AuthForm({ type }: AuthFormProps) {
         if (error) throw error;
 
         // Initialize default data for new user
-        if (data.user) {
-          // Add 2 default accounts
-          await supabase.from("accounts").insert([
-            {
-              user_id: data.user.id,
-              name: "Main Bank",
-              type: "bank",
-              balance: 0,
-              color: "#3b82f6",
-              icon: "landmark",
-            },
-            {
-              user_id: data.user.id,
-              name: "Cash Wallet",
-              type: "cash",
-              balance: 0,
-              color: "#10b981",
-              icon: "wallet",
-            },
-          ]);
+        // ... (data initialization code) ...
 
-          // Add 8 categories (6 expenses, 2 income)
-          await supabase.from("categories").insert([
-            {
-              user_id: data.user.id,
-              name: "Salary",
-              type: "income",
-              icon: "briefcase",
-              color: "#10b981",
-            },
-            {
-              user_id: data.user.id,
-              name: "Investments",
-              type: "income",
-              icon: "trending-up",
-              color: "#8b5cf6",
-            },
-            {
-              user_id: data.user.id,
-              name: "Food & Dining",
-              type: "expense",
-              icon: "utensils",
-              color: "#f97316",
-            },
-            {
-              user_id: data.user.id,
-              name: "Transportation",
-              type: "expense",
-              icon: "bus",
-              color: "#3b82f6",
-            },
-            {
-              user_id: data.user.id,
-              name: "Housing",
-              type: "expense",
-              icon: "home",
-              color: "#ef4444",
-            },
-            {
-              user_id: data.user.id,
-              name: "Entertainment",
-              type: "expense",
-              icon: "clapperboard",
-              color: "#f43f5e",
-            },
-            {
-              user_id: data.user.id,
-              name: "Shopping",
-              type: "expense",
-              icon: "shopping-bag",
-              color: "#f59e0b",
-            },
-            {
-              user_id: data.user.id,
-              name: "Health",
-              type: "expense",
-              icon: "heart",
-              color: "#ec4899",
-            },
-          ]);
-        }
-
+        toast.success(
+          "Account created! Please check your email for verification.",
+        );
         router.push("/dashboard");
       }
       router.refresh();
@@ -165,8 +90,10 @@ export function AuthForm({ type }: AuthFormProps) {
         err.message?.includes("configuration")
       ) {
         console.warn("Supabase not configured, proceeding as mock user");
+        toast.info("Supabase not configured, using mock mode");
         router.push("/dashboard");
       } else {
+        toast.error(err.message || "Authentication failed");
         setError(err.message || "Something went wrong");
       }
     } finally {

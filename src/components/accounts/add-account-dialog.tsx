@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createAccount } from "@/services/accounts/actions";
+import { toast } from "sonner";
 
 const accountSchema = z.object({
   name: z.string().min(1, "Account name is required"),
@@ -70,9 +71,11 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
         color: values.color,
         icon: values.icon,
       });
+      toast.success("Account created successfully!");
       form.reset();
       setOpen(false);
     } catch (error) {
+      toast.error("Failed to create account. Please try again.");
       console.error("Failed to create account:", error);
     }
   }

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Account, Category } from "@/types";
+import { toast } from "sonner";
 
 const transactionSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -73,8 +74,10 @@ export function TransactionForm({
         description: values.description || null,
       });
       form.reset();
+      toast.success("Transaction added!");
       if (onSuccess) onSuccess();
     } catch (error) {
+      toast.error("Failed to add transaction.");
       console.error("Failed to create transaction:", error);
     }
   }
