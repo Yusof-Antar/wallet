@@ -39,23 +39,37 @@ const transactionSchema = z.object({
   description: z.string().optional(),
 });
 
+import {
+  createTransaction,
+  updateTransaction,
+} from "@/services/transactions/actions";
+import { Transaction } from "@/types";
+
 interface TransactionFormProps {
   accounts: Account[];
-  categories: Category[]; // We'll mock this if needed
+  categories: Category[];
   onSuccess?: () => void;
+  transaction?: Transaction;
 }
 
 export function TransactionForm({
   accounts,
   categories,
   onSuccess,
+  transaction,
 }: TransactionFormProps) {
   const form = useForm<z.infer<typeof transactionSchema>>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      amount: "",
-      type: "expense",
-      date: format(new Date(), "yyyy-MM-dd"),
+      amount: transaction?.amount?.toString() || "",
+      type:
+        (transaction?.type as "income" | "expense" | "transfer") || "expense",
+      accountId: transaction?.account_id || "",
+      categoryId: transaction?.category_id || "",
+      date: transaction
+        ? format(new Date(transaction.date), "yyyy-MM-dd")
+        : format(new Date(), "yyyy-MM-dd"),
+      description: transaction?.description || "",
     },
   });
 
@@ -63,22 +77,39 @@ export function TransactionForm({
 
   async function onSubmit(values: z.infer<typeof transactionSchema>) {
     try {
-      const { createTransaction } =
-        await import("@/services/transactions/actions");
-      await createTransaction({
-        amount: Number(values.amount),
-        type: values.type,
-        account_id: values.accountId,
-        category_id: values.categoryId,
-        date: new Date(values.date).toISOString(),
-        description: values.description || null,
-      });
-      form.reset();
-      toast.success("Transaction added!");
+      if (transaction) {
+        await updateTransaction(
+          transaction.id,
+          {
+            amount: Number(values.amount),
+            type: values.type,
+            account_id: values.accountId,
+            category_id: values.categoryId,
+            date: new Date(values.date).toISOString(),
+            description: values.description || null,
+          },
+          transaction,
+        );
+        toast.success("Transaction updated!");
+      } else {
+        await createTransaction({
+          amount: Number(values.amount),
+          type: values.type,
+          account_id: values.accountId,
+          category_id: values.categoryId,
+          date: new Date(values.date).toISOString(),
+          description: values.description || null,
+        });
+        toast.success("Transaction added!");
+      }
+      if (!transaction) form.reset();
       if (onSuccess) onSuccess();
     } catch (error) {
-      toast.error("Failed to add transaction.");
-      console.error("Failed to create transaction:", error);
+      toast.error(`Failed to ${transaction ? "update" : "add"} transaction.`);
+      console.error(
+        `Failed to ${transaction ? "update" : "create"} transaction:`,
+        error,
+      );
     }
   }
 
@@ -248,13 +279,13 @@ export function TransactionForm({
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full rounded-lg"
           disabled={form.formState.isSubmitting}
         >
           {form.formState.isSubmitting && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
-          Add Transaction
+          {transaction ? "Update" : "Add"} Transaction
         </Button>
       </form>
     </Form>

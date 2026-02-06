@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,18 +34,12 @@ import {
 import { ChecklistItem } from "@/types";
 import { toast } from "sonner";
 
+import { ChecklistDialog } from "@/components/checklists/checklist-dialog";
+import { PenLine } from "lucide-react";
+
 export default function ChecklistsPage() {
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAdding, setIsAdding] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [newItem, setNewItem] = useState({
-    name: "",
-    price: "",
-    category: "",
-    frequency: "monthly" as ChecklistItem["frequency"],
-  });
 
   useEffect(() => {
     fetchItems();
@@ -63,7 +58,7 @@ export default function ChecklistsPage() {
 
   const handleToggle = async (id: string, currentStatus: boolean) => {
     try {
-      await toggleChecklistItem(id, !currentStatus);
+      await toggleChecklistStatus(id, !currentStatus);
       setItems(
         items.map((item) =>
           item.id === id ? { ...item, is_completed: !currentStatus } : item,
@@ -72,139 +67,40 @@ export default function ChecklistsPage() {
       toast.success(currentStatus ? "Item unmarked" : "Item completed!");
     } catch (error) {
       toast.error("Failed to update item.");
-      console.error("Failed to toggle item:", error);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteChecklistItem(id);
+      await deleteItem(id);
       setItems(items.filter((item) => item.id !== id));
       toast.success("Item deleted");
     } catch (error) {
       toast.error("Failed to delete item.");
-      console.error("Failed to delete item:", error);
     }
   };
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsAdding(true);
-    try {
-      const addedItem = await addChecklistItem({
-        name: newItem.name,
-        price: parseFloat(newItem.price),
-        category: newItem.category,
-        frequency: newItem.frequency,
-      });
-      setItems([addedItem, ...items]);
-      setIsDialogOpen(false);
-      setNewItem({
-        name: "",
-        price: "",
-        category: "",
-        frequency: "monthly",
-      });
-      toast.success("Item added to checklist!");
-    } catch (error) {
-      toast.error("Failed to add item. Please try again.");
-      console.error("Failed to add item:", error);
-    } finally {
-      setIsAdding(false);
-    }
+  // Re-fetch items on success
+  const onSuccess = () => {
+    fetchItems();
   };
+
+  // Alias actions for clarity
+  const toggleChecklistStatus = toggleChecklistItem;
+  const deleteItem = deleteChecklistItem;
 
   return (
-    <div className="space-y-6 text-foreground">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
             Planned Payments
           </h2>
           <p className="text-muted-foreground">
-            Track your recurring expenses and bucket list
+            Manage your recurring expenses and subscriptions
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Checklist Item</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleAdd} className="space-y-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={newItem.name}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, name: e.target.value })
-                  }
-                  placeholder="e.g. Netflix Subscription"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="price">Price</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={newItem.price}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, price: e.target.value })
-                  }
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="category">Category</Label>
-                <Input
-                  id="category"
-                  value={newItem.category}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, category: e.target.value })
-                  }
-                  placeholder="e.g. Entertainment"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="frequency">Frequency</Label>
-                <Select
-                  value={newItem.frequency}
-                  onValueChange={(value: ChecklistItem["frequency"]) =>
-                    setNewItem({ ...newItem, frequency: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="one-time">One-time</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isAdding}>
-                  {isAdding && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isAdding ? "Adding..." : "Add Item"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <ChecklistDialog onSuccess={onSuccess} />
       </div>
 
       {isLoading ? (
@@ -212,11 +108,11 @@ export default function ChecklistsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {items.map((item) => (
-            <Card
+            <div
               key={item.id}
-              className="p-4 flex items-center justify-between"
+              className="group flex items-center justify-between p-4 border border-border/50 bg-card rounded-xl hover:border-border transition-colors"
             >
               <div className="flex items-center gap-4">
                 <Checkbox
@@ -224,42 +120,64 @@ export default function ChecklistsPage() {
                   onCheckedChange={() =>
                     handleToggle(item.id, item.is_completed)
                   }
+                  className="rounded-md h-5 w-5"
                 />
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <p
-                    className={`font-medium leading-none ${item.is_completed ? "line-through text-muted-foreground" : ""}`}
+                    className={cn(
+                      "font-medium transition-all",
+                      item.is_completed
+                        ? "line-through text-muted-foreground/60"
+                        : "text-foreground",
+                    )}
                   >
                     {item.name}
                   </p>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="px-1.5 py-0 h-4 text-[10px] font-medium rounded-md uppercase tracking-wider"
+                    >
                       {item.frequency}
                     </Badge>
-                    <span className="text-xs text-muted-foreground capitalize">
+                    <span className="text-[10px] text-muted-foreground capitalize">
                       {item.category}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm mr-2">
                   {formatCurrency(item.price)}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(item.id)}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChecklistDialog item={item} onSuccess={onSuccess}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <PenLine className="h-4 w-4" />
+                    </Button>
+                  </ChecklistDialog>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(item.id)}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </Card>
+            </div>
           ))}
 
           {items.length === 0 && (
-            <div className="py-20 text-center border rounded-xl border-dashed">
-              <p className="text-muted-foreground text-sm">No items found.</p>
+            <div className="py-20 text-center border border-dashed border-border/50 rounded-2xl">
+              <p className="text-muted-foreground text-sm">
+                No items planned yet.
+              </p>
             </div>
           )}
         </div>

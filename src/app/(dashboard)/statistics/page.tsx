@@ -95,51 +95,51 @@ export default function StatisticsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-none shadow-xl shadow-black/5 bg-emerald-500/10 backdrop-blur-md">
+        <Card className="border border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-emerald-500 rounded-lg text-white">
+              <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-600">
                 <TrendingUp className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-emerald-600 uppercase tracking-tighter">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Total Income
                 </p>
-                <p className="text-2xl font-black">
+                <p className="text-2xl font-bold tracking-tight">
                   {formatCurrency(data.totalIncome)}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-xl shadow-black/5 bg-rose-500/10 backdrop-blur-md">
+        <Card className="border border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-rose-500 rounded-lg text-white">
+              <div className="p-2 bg-rose-500/10 rounded-lg text-rose-600">
                 <TrendingDown className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-rose-600 uppercase tracking-tighter">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Total Expenses
                 </p>
-                <p className="text-2xl font-black">
+                <p className="text-2xl font-bold tracking-tight">
                   {formatCurrency(data.totalExpense)}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-xl shadow-black/5 bg-indigo-500/10 backdrop-blur-md">
+        <Card className="border border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-indigo-500 rounded-lg text-white">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
                 <Wallet className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-indigo-600 uppercase tracking-tighter">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Net Balance
                 </p>
-                <p className="text-2xl font-black">
+                <p className="text-2xl font-bold tracking-tight">
                   {formatCurrency(data.netBalance)}
                 </p>
               </div>
@@ -149,9 +149,9 @@ export default function StatisticsPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <Card className="border-none shadow-xl shadow-black/5 bg-card/60 backdrop-blur-md transition-all duration-300 hover:shadow-2xl">
+        <Card className="border border-border/50 bg-card shadow-sm transition-all hover:border-border/80">
           <CardHeader>
-            <CardTitle className="text-xl font-black tracking-tight">
+            <CardTitle className="text-lg font-bold tracking-tight">
               Expenses by Category
             </CardTitle>
           </CardHeader>
@@ -173,30 +173,33 @@ export default function StatisticsPage() {
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
-                        className="drop-shadow-lg"
+                        className="opacity-90 hover:opacity-100 transition-opacity"
                       />
                     ),
                   )}
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "rgba(255, 255, 255, 0.8)",
-                    backdropFilter: "blur(8px)",
-                    borderRadius: "16px",
-                    border: "none",
+                    backgroundColor: "hsl(var(--popover))",
+                    borderRadius: "12px",
+                    border: "1px solid hsl(var(--border))",
                     boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                   }}
+                  itemStyle={{ fontSize: "12px", fontWeight: "600" }}
                   formatter={(value: any) => formatCurrency(value)}
                 />
-                <Legend iconType="circle" />
+                <Legend
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-xl shadow-black/5 bg-card/60 backdrop-blur-md transition-all duration-300 hover:shadow-2xl">
+        <Card className="border border-border/50 bg-card shadow-sm transition-all hover:border-border/80">
           <CardHeader>
-            <CardTitle className="text-xl font-black tracking-tight">
+            <CardTitle className="text-lg font-bold tracking-tight">
               Income vs Expenses
             </CardTitle>
           </CardHeader>
@@ -208,44 +211,47 @@ export default function StatisticsPage() {
               >
                 <XAxis
                   dataKey="date"
-                  stroke="#888888"
+                  stroke="hsl(var(--muted-foreground))"
                   fontSize={10}
-                  fontWeight="bold"
+                  fontWeight="500"
                   tickLine={false}
                   axisLine={false}
                   dy={10}
                   tickFormatter={(value) => value.split("-").slice(1).join("/")}
                 />
                 <YAxis
-                  stroke="#888888"
+                  stroke="hsl(var(--muted-foreground))"
                   fontSize={10}
-                  fontWeight="bold"
+                  fontWeight="500"
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => `$${value}`}
                 />
                 <Tooltip
-                  cursor={{ fill: "rgba(0,0,0,0.02)" }}
+                  cursor={{ fill: "hsl(var(--accent))", opacity: 0.1 }}
                   contentStyle={{
-                    backgroundColor: "rgba(255, 255, 255, 0.8)",
-                    backdropFilter: "blur(8px)",
-                    borderRadius: "16px",
-                    border: "none",
+                    backgroundColor: "hsl(var(--popover))",
+                    borderRadius: "12px",
+                    border: "1px solid hsl(var(--border))",
                     boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                   }}
+                  itemStyle={{ fontSize: "12px", fontWeight: "600" }}
                   formatter={(value: any) => formatCurrency(value)}
                 />
-                <Legend iconType="circle" />
+                <Legend
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
+                />
                 <Bar
                   dataKey="income"
-                  fill="#10b981"
-                  radius={[10, 10, 0, 0]}
+                  fill="oklch(0.65 0.15 150)" /* Emerald */
+                  radius={[4, 4, 0, 0]}
                   barSize={timeframe === "year" ? 10 : 20}
                 />
                 <Bar
                   dataKey="expense"
-                  fill="#f43f5e"
-                  radius={[10, 10, 0, 0]}
+                  fill="oklch(0.65 0.15 20)" /* Rose */
+                  radius={[4, 4, 0, 0]}
                   barSize={timeframe === "year" ? 10 : 20}
                 />
               </BarChart>

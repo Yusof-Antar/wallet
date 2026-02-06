@@ -34,3 +34,25 @@ export async function createAccount(
   revalidatePath("/accounts");
   return data[0];
 }
+export async function updateAccount(
+  id: string,
+  account: Partial<Omit<Account, "id" | "created_at" | "user_id">>,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data, error } = await supabase
+    .from("accounts")
+    .update(account)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select();
+
+  if (error) throw error;
+  revalidatePath("/dashboard");
+  revalidatePath("/accounts");
+  return data[0];
+}

@@ -1,12 +1,19 @@
 import { TransactionItem } from "@/components/transactions/transaction-item";
-import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
-import { AddCategoryDialog } from "@/components/categories/add-category-dialog";
+import { TransactionDialog } from "@/components/transactions/add-transaction-dialog";
+import { CategoryDialog } from "@/components/categories/add-category-dialog";
 import { getTransactions } from "@/services/transactions/actions";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
-export default async function TransactionsPage() {
-  const transactions = await getTransactions(50);
+import { TransactionFilters } from "@/components/transactions/transaction-filters";
+
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ timeframe?: string }>;
+}) {
+  const { timeframe = "all" } = await searchParams;
+  const transactions = await getTransactions({ timeframe, limit: 100 });
 
   // Group transactions by date
   const groupedTransactions = transactions.reduce(
@@ -35,17 +42,12 @@ export default async function TransactionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <AddCategoryDialog />
-          <AddTransactionDialog />
+          <CategoryDialog />
+          <TransactionDialog />
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search transactions..." className="pl-9" />
-        </div>
-      </div>
+      <TransactionFilters />
 
       <div className="space-y-8">
         {Object.entries(groupedTransactions).map(([date, items]) => (

@@ -1,7 +1,7 @@
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { AccountCard } from "@/components/dashboard/account-card";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
-import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
+import { TransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { getAccounts } from "@/services/accounts/actions";
 import { getTransactions } from "@/services/transactions/actions";
 import { getStatistics } from "@/services/statistics/actions";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export default async function DashboardPage() {
   const [accounts, transactions, stats] = await Promise.all([
     getAccounts(),
-    getTransactions(5),
+    getTransactions({ limit: 5 }),
     getStatistics("month"),
   ]);
 
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
             Welcome back! Here's what's happening with your money.
           </p>
         </div>
-        <AddTransactionDialog />
+        <TransactionDialog />
       </div>
 
       <DashboardOverview

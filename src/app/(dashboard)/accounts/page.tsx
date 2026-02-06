@@ -2,7 +2,7 @@ import { AccountCard } from "@/components/dashboard/account-card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { getAccounts } from "@/services/accounts/actions";
-import { AddAccountDialog } from "@/components/accounts/add-account-dialog";
+import { AccountDialog } from "@/components/accounts/add-account-dialog";
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();
@@ -16,7 +16,7 @@ export default async function AccountsPage() {
             Manage your wallets and bank accounts
           </p>
         </div>
-        <AddAccountDialog />
+        <AccountDialog />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -25,7 +25,7 @@ export default async function AccountsPage() {
         ))}
 
         {/* Add Account Card (Visual) */}
-        <AddAccountDialog>
+        <AccountDialog>
           <button className="flex h-full min-h-[140px] w-full flex-col items-center justify-center rounded-xl border border-dashed hover:bg-muted/50 transition-colors">
             <div className="rounded-full bg-primary/10 p-4 mb-3">
               <Plus className="h-6 w-6 text-primary" />
@@ -34,7 +34,7 @@ export default async function AccountsPage() {
               Add New Account
             </span>
           </button>
-        </AddAccountDialog>
+        </AccountDialog>
       </div>
     </div>
   );

@@ -32,8 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAccount } from "@/services/accounts/actions";
+import { createAccount, updateAccount } from "@/services/accounts/actions";
 import { toast } from "sonner";
+import { Account } from "@/types";
 
 const accountSchema = z.object({
   name: z.string().min(1, "Account name is required"),
@@ -46,41 +47,59 @@ const accountSchema = z.object({
   is_included_in_balance: z.boolean(),
 });
 
-interface AddAccountDialogProps {
+interface AccountDialogProps {
   children?: React.ReactNode;
+  account?: Account;
 }
 
-export function AddAccountDialog({ children }: AddAccountDialogProps) {
+export function AccountDialog({ children, account }: AccountDialogProps) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof accountSchema>>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
-      name: "",
-      type: "bank",
-      balance: "0",
-      color: "#6366f1",
-      icon: "Wallet",
-      is_included_in_balance: true,
+      name: account?.name || "",
+      type: account?.type || "bank",
+      balance: account?.balance?.toString() || "0",
+      color: account?.color || "#6366f1",
+      icon: account?.icon || "Wallet",
+      is_included_in_balance: account?.is_included_in_balance ?? true,
     },
   });
 
   async function onSubmit(values: z.infer<typeof accountSchema>) {
     try {
-      await createAccount({
-        name: values.name,
-        type: values.type,
-        balance: Number(values.balance),
-        color: values.color,
-        icon: values.icon,
-        is_included_in_balance: values.is_included_in_balance,
-      });
-      toast.success("Account created successfully!");
+      if (account) {
+        await updateAccount(account.id, {
+          name: values.name,
+          type: values.type,
+          balance: Number(values.balance),
+          color: values.color,
+          icon: values.icon,
+          is_included_in_balance: values.is_included_in_balance,
+        });
+        toast.success("Account updated successfully!");
+      } else {
+        await createAccount({
+          name: values.name,
+          type: values.type,
+          balance: Number(values.balance),
+          color: values.color,
+          icon: values.icon,
+          is_included_in_balance: values.is_included_in_balance,
+        });
+        toast.success("Account created successfully!");
+      }
       form.reset();
       setOpen(false);
     } catch (error) {
-      toast.error("Failed to create account. Please try again.");
-      console.error("Failed to create account:", error);
+      toast.error(
+        `Failed to ${account ? "update" : "create"} account. Please try again.`,
+      );
+      console.error(
+        `Failed to ${account ? "update" : "create"} account:`,
+        error,
+      );
     }
   }
 
@@ -88,7 +107,7 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button>
+          <Button size="sm" className="rounded-lg">
             <Plus className="mr-2 h-4 w-4" />
             Add Account
           </Button>
@@ -96,9 +115,11 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Add Account</DialogTitle>
+          <DialogTitle>{account ? "Edit Account" : "Add Account"}</DialogTitle>
           <DialogDescription>
-            Create a new account to track your finances.
+            {account
+              ? "Update your account details."
+              : "Create a new account to track your finances."}
           </DialogDescription>
         </DialogHeader>
 
@@ -152,7 +173,9 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
                 name="balance"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Initial Balance</FormLabel>
+                    <FormLabel>
+                      {account ? "Current Balance" : "Initial Balance"}
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" {...field} />
                     </FormControl>
@@ -186,13 +209,13 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full rounded-lg"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Create Account
+              {account ? "Update Account" : "Create Account"}
             </Button>
           </form>
         </Form>

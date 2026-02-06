@@ -31,7 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createCategory } from "@/services/categories/actions";
+import { Category } from "@/types";
+import { createCategory, updateCategory } from "@/services/categories/actions";
 import { toast } from "sonner";
 
 const categorySchema = z.object({
@@ -41,37 +42,47 @@ const categorySchema = z.object({
   color: z.string().min(1, "Color is required"),
 });
 
-interface AddCategoryDialogProps {
+interface CategoryDialogProps {
   children?: React.ReactNode;
   onSuccess?: () => void;
+  category?: Category;
 }
 
-export function AddCategoryDialog({
+export function CategoryDialog({
   children,
   onSuccess,
-}: AddCategoryDialogProps) {
+  category,
+}: CategoryDialogProps) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof categorySchema>>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: "",
-      type: "expense",
-      icon: "tag",
-      color: "#6366f1",
+      name: category?.name || "",
+      type: (category?.type as "income" | "expense") || "expense",
+      icon: category?.icon || "tag",
+      color: category?.color || "#6366f1",
     },
   });
 
   async function onSubmit(values: z.infer<typeof categorySchema>) {
     try {
-      await createCategory(values);
-      toast.success("Category created successfully!");
+      if (category) {
+        await updateCategory(category.id, values);
+        toast.success("Category updated successfully!");
+      } else {
+        await createCategory(values);
+        toast.success("Category created successfully!");
+      }
       form.reset();
       setOpen(false);
       if (onSuccess) onSuccess();
     } catch (error) {
-      toast.error("Failed to create category.");
-      console.error("Failed to create category:", error);
+      toast.error(`Failed to ${category ? "update" : "create"} category.`);
+      console.error(
+        `Failed to ${category ? "update" : "create"} category:`,
+        error,
+      );
     }
   }
 
@@ -79,7 +90,7 @@ export function AddCategoryDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="rounded-lg h-10 px-4">
             <Plus className="mr-2 h-4 w-4" />
             New Category
           </Button>
@@ -87,14 +98,21 @@ export function AddCategoryDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Add Category</DialogTitle>
+          <DialogTitle>
+            {category ? "Edit Category" : "Add Category"}
+          </DialogTitle>
           <DialogDescription>
-            Create a custom category for your transactions.
+            {category
+              ? "Update your custom category."
+              : "Create a custom category for your transactions."}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-5 py-2"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -102,7 +120,11 @@ export function AddCategoryDialog({
                 <FormItem>
                   <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Subscriptions" {...field} />
+                    <Input
+                      placeholder="e.g. Subscriptions"
+                      {...field}
+                      className="rounded-lg"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -121,7 +143,7 @@ export function AddCategoryDialog({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
@@ -140,9 +162,13 @@ export function AddCategoryDialog({
                 name="icon"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Icon</FormLabel>
+                    <FormLabel>Icon Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. tag, home, car" {...field} />
+                      <Input
+                        placeholder="e.g. tag, home, car"
+                        {...field}
+                        className="rounded-lg"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,10 +186,13 @@ export function AddCategoryDialog({
                     <div className="flex gap-2">
                       <Input
                         type="color"
-                        className="w-12 h-10 p-1"
+                        className="w-12 h-10 p-1 rounded-md cursor-pointer"
                         {...field}
                       />
-                      <Input className="flex-1" {...field} />
+                      <Input
+                        className="flex-1 rounded-lg font-mono text-sm uppercase"
+                        {...field}
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -173,13 +202,13 @@ export function AddCategoryDialog({
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full rounded-lg"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Create Category
+              {category ? "Update" : "Create"} Category
             </Button>
           </form>
         </Form>

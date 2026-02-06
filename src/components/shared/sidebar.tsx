@@ -36,18 +36,20 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="hidden h-screen w-64 flex-col border-r bg-background/80 backdrop-blur-xl md:flex fixed left-0 top-0 z-50">
+    <aside className="hidden h-screen w-64 flex-col border-r bg-background/50 md:flex fixed left-0 top-0 z-50">
       <div className="flex h-16 items-center px-6 border-b border-border/40">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <span className="text-white font-bold text-lg">M</span>
+          <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-black text-sm">
+              M
+            </span>
           </div>
-          <h1 className="text-2xl font-black tracking-tighter text-foreground">
+          <h1 className="text-lg font-bold tracking-tight text-foreground">
             Mony
           </h1>
         </div>
       </div>
-      <nav className="flex-1 space-y-1.5 p-4 mt-2">
+      <nav className="flex-1 space-y-1 p-4 mt-2">
         {sidebarItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -55,16 +57,16 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300",
+                "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-linear-to-r from-primary/10 to-transparent text-primary shadow-xs border-l-4 border-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
               )}
             >
               <item.icon
                 className={cn(
-                  "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
-                  isActive ? "text-primary" : "text-muted-foreground",
+                  "h-4 w-4 transition-colors",
+                  isActive ? "text-foreground" : "text-muted-foreground",
                 )}
               />
               {item.label}
@@ -76,9 +78,9 @@ export function Sidebar() {
         <Button
           variant="ghost"
           onClick={handleSignOut}
-          className="w-full justify-start gap-3 rounded-xl py-6 text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-semibold transition-all"
+          className="w-full justify-start gap-3 rounded-lg py-2 h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 font-medium transition-colors"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4" />
           Sign Out
         </Button>
       </div>

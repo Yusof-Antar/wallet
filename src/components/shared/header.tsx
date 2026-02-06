@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { getUserSettings } from "@/services/settings/actions";
 import { Profile } from "@/types";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export function Header() {
   const pathname = usePathname();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -25,9 +27,9 @@ export function Header() {
   const getTitle = () => {
     switch (pathname) {
       case "/dashboard":
-        return "Dashboard";
+        return "Overview";
       case "/accounts":
-        return "My Accounts";
+        return "Accounts";
       case "/transactions":
         return "Transactions";
       case "/statistics":
@@ -50,27 +52,22 @@ export function Header() {
     .substring(0, 2);
 
   return (
-    <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-border/40 bg-background/60 px-8 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-6 backdrop-blur-xl">
       <div>
-        <h1 className="text-2xl font-black tracking-tight text-foreground">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
           {getTitle()}
         </h1>
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
-          Personal Finance
-        </p>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
         <div className="hidden sm:flex flex-col items-end mr-2">
-          <span className="text-sm font-bold">{displayName}</span>
-          <span className="text-[10px] text-emerald-500 font-black uppercase">
-            Premium Plan
-          </span>
+          <span className="text-sm font-medium">{displayName}</span>
         </div>
-        <Avatar className="h-10 w-10 cursor-pointer ring-2 ring-primary/20 ring-offset-2 transition-all hover:ring-primary/40">
+        <Avatar className="h-8 w-8 cursor-pointer ring-1 ring-border transition-all hover:ring-primary/40">
           <AvatarImage
             src={profile?.avatar_url || "https://github.com/shadcn.png"}
           />
-          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+          <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
             {initials || "U"}
           </AvatarFallback>
         </Avatar>

@@ -55,3 +55,26 @@ export async function addChecklistItem(
   revalidatePath("/checklists");
   return data[0];
 }
+export async function updateChecklistItem(
+  id: string,
+  item: Partial<
+    Omit<ChecklistItem, "id" | "is_completed" | "created_at" | "user_id">
+  >,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data, error } = await supabase
+    .from("checklist_items")
+    .update(item)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select();
+
+  if (error) throw error;
+  revalidatePath("/checklists");
+  return data[0];
+}

@@ -1,5 +1,3 @@
-"use client";
-
 import { Account } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,10 +6,13 @@ import {
   Landmark,
   PiggyBank,
   CreditCard,
+  PenLine,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AccountDialog } from "@/components/accounts/add-account-dialog";
 
 const iconMap: Record<string, any> = {
   wallet: Wallet,
@@ -26,29 +27,40 @@ interface AccountCardProps {
 }
 
 export function AccountCard({ account }: AccountCardProps) {
-  const Icon = iconMap[account.icon] || Wallet;
+  const Icon = iconMap[account.icon.toLowerCase()] || Wallet;
 
   return (
-    <Card className="group overflow-hidden border-none shadow-lg shadow-black/5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/50 backdrop-blur-sm border-white/20">
+    <Card className="group relative overflow-hidden border border-border/50 transition-all hover:border-border hover:shadow-sm bg-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {account.name}
         </CardTitle>
-        <div
-          className="rounded-2xl p-3 shadow-inner transition-transform duration-300 group-hover:scale-110"
-          style={{ backgroundColor: `${account.color}15` }}
-        >
-          <Icon className="h-5 w-5" style={{ color: account.color }} />
+        <div className="flex items-center gap-1">
+          <AccountDialog account={account}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <PenLine className="h-3.5 w-3.5" />
+            </Button>
+          </AccountDialog>
+          <div
+            className="rounded-lg p-2"
+            style={{ backgroundColor: `${account.color}10` }}
+          >
+            <Icon className="h-4 w-4" style={{ color: account.color }} />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-2">
-        <div className="text-3xl font-black tracking-tight text-foreground">
+        <div className="text-2xl font-bold tracking-tight text-foreground">
           {formatCurrency(account.balance)}
         </div>
         <div className="mt-4 flex items-center justify-between">
           <Badge
-            variant="outline"
-            className="rounded-lg font-bold capitalize bg-white/50 border-none px-3 py-1 text-xs"
+            variant="secondary"
+            className="rounded-md font-medium capitalize px-2 py-0 h-5 text-[10px]"
           >
             {account.type}
           </Badge>

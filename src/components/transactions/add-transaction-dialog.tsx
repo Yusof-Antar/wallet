@@ -14,9 +14,17 @@ import { TransactionForm } from "@/components/forms/transaction-form";
 import { Plus, Loader2 } from "lucide-react";
 import { getAccounts } from "@/services/accounts/actions";
 import { getCategories } from "@/services/categories/actions";
-import { Account, Category } from "@/types";
+import { Transaction, Account, Category } from "@/types";
 
-export function AddTransactionDialog() {
+interface TransactionDialogProps {
+  children?: React.ReactNode;
+  transaction?: Transaction;
+}
+
+export function TransactionDialog({
+  children,
+  transaction,
+}: TransactionDialogProps) {
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -44,16 +52,22 @@ export function AddTransactionDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-full shadow-lg h-12 w-12 p-0 md:h-10 md:w-auto md:px-4 md:rounded-md">
-          <Plus className="h-6 w-6 md:mr-2 md:h-4 md:w-4" />
-          <span className="hidden md:inline">Add Transaction</span>
-        </Button>
+        {children || (
+          <Button className="rounded-full shadow-lg h-12 w-12 p-0 md:h-10 md:w-auto md:px-4 md:rounded-md">
+            <Plus className="h-6 w-6 md:mr-2 md:h-4 md:w-4" />
+            <span className="hidden md:inline">Add Transaction</span>
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
+          <DialogTitle>
+            {transaction ? "Edit Transaction" : "Add Transaction"}
+          </DialogTitle>
           <DialogDescription>
-            Record an income, expense, or transfer.
+            {transaction
+              ? "Update your transaction details."
+              : "Record an income, expense, or transfer."}
           </DialogDescription>
         </DialogHeader>
 
@@ -66,6 +80,7 @@ export function AddTransactionDialog() {
             accounts={accounts}
             categories={categories}
             onSuccess={() => setOpen(false)}
+            transaction={transaction}
           />
         )}
       </DialogContent>

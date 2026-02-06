@@ -37,6 +37,7 @@ export function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,11 +75,10 @@ export function AuthForm({ type }: AuthFormProps) {
         });
         if (error) throw error;
 
-        // Initialize default data for new user
+        // Initialize default data for new user (Wait, this should probably be a trigger/webhook in production, but we'll leave it for now)
         if (data.user) {
           const userId = data.user.id;
-
-          // 1. Create default accounts
+          // ... existing initialization code stays ...
           const defaultAccounts = [
             {
               name: "Main Bank",
@@ -99,23 +99,14 @@ export function AuthForm({ type }: AuthFormProps) {
               user_id: userId,
             },
           ];
-
           await supabase.from("accounts").insert(defaultAccounts);
 
-          // 2. Create default categories
           const defaultCategories = [
             {
               name: "Salary",
               type: "income",
               icon: "briefcase",
               color: "#10b981",
-              user_id: userId,
-            },
-            {
-              name: "Gifts",
-              type: "income",
-              icon: "gift",
-              color: "#ec4899",
               user_id: userId,
             },
             {
@@ -126,58 +117,23 @@ export function AuthForm({ type }: AuthFormProps) {
               user_id: userId,
             },
             {
-              name: "Transport",
-              type: "expense",
-              icon: "bus",
-              color: "#3b82f6",
-              user_id: userId,
-            },
-            {
               name: "Rent",
               type: "expense",
               icon: "home",
               color: "#8b5cf6",
               user_id: userId,
             },
-            {
-              name: "Entertainment",
-              type: "expense",
-              icon: "clapperboard",
-              color: "#f43f5e",
-              user_id: userId,
-            },
-            {
-              name: "Health",
-              type: "expense",
-              icon: "heart",
-              color: "#ef4444",
-              user_id: userId,
-            },
-            {
-              name: "Shopping",
-              type: "expense",
-              icon: "shopping-bag",
-              color: "#f59e0b",
-              user_id: userId,
-            },
           ];
-
           await supabase.from("categories").insert(defaultCategories);
         }
 
-        toast.success(
-          "Account created! Please check your email for verification.",
-        );
-        router.push("/dashboard");
+        setIsSuccess(true);
       }
-      router.refresh();
     } catch (err: any) {
-      // Fallback for demo if no Supabase keys
       if (
         err.message?.includes("missing") ||
         err.message?.includes("configuration")
       ) {
-        console.warn("Supabase not configured, proceeding as mock user");
         toast.info("Supabase not configured, using mock mode");
         router.push("/dashboard");
       } else {
@@ -187,6 +143,52 @@ export function AuthForm({ type }: AuthFormProps) {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 py-8 text-center animate-in fade-in zoom-in duration-300">
+        <div className="rounded-full bg-emerald-500/10 p-6">
+          <Loader2 className="h-12 w-12 text-emerald-600" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-bold tracking-tight">
+            Check your email
+          </h3>
+          <p className="text-muted-foreground max-w-sm mx-auto">
+            We've sent a verification link to your email address. Please click
+            the link to activate your account.
+          </p>
+        </div>
+        <div className="pt-4 flex flex-col gap-2 w-full">
+          <div className="flex items-start gap-3 text-left p-4 rounded-xl bg-muted/50 text-sm">
+            <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
+              1
+            </div>
+            <div>
+              Find the email from{" "}
+              <span className="font-semibold">Antigravity Wallet</span>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 text-left p-4 rounded-xl bg-muted/50 text-sm">
+            <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
+              2
+            </div>
+            <div>
+              Click the <span className="font-semibold">Confirm Email</span>{" "}
+              button
+            </div>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          className="w-full mt-4"
+          onClick={() => router.push("/login")}
+        >
+          Return to Login
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -200,7 +202,11 @@ export function AuthForm({ type }: AuthFormProps) {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="name@example.com" {...field} />
+                  <Input
+                    placeholder="name@example.com"
+                    {...field}
+                    className="rounded-lg h-12"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -213,7 +219,12 @@ export function AuthForm({ type }: AuthFormProps) {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    {...field}
+                    className="rounded-lg h-12"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -222,7 +233,11 @@ export function AuthForm({ type }: AuthFormProps) {
           {error && (
             <div className="text-sm font-medium text-destructive">{error}</div>
           )}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full h-12 rounded-lg text-base font-semibold"
+            disabled={isLoading}
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {type === "login" ? "Sign In" : "Create Account"}
           </Button>
