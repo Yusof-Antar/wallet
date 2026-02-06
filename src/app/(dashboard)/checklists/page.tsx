@@ -11,7 +11,7 @@ import {
   getChecklistItems,
   toggleChecklistItem,
   deleteChecklistItem,
-} from "@/lib/actions";
+} from "@/services/checklists/actions";
 import { ChecklistItem } from "@/types";
 
 export default function ChecklistsPage() {

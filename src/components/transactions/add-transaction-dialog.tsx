@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/forms/transaction-form";
 import { Plus, Loader2 } from "lucide-react";
-import { getAccounts, getCategories } from "@/lib/actions";
+import { getAccounts } from "@/services/accounts/actions";
+import { getCategories } from "@/services/categories/actions";
 import { Account, Category } from "@/types";
 
 export function AddTransactionDialog() {

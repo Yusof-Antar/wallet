@@ -1,7 +1,7 @@
 import { AccountCard } from "@/components/dashboard/account-card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { getAccounts } from "@/lib/actions";
+import { getAccounts } from "@/services/accounts/actions";
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();

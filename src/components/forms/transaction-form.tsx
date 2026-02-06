@@ -62,7 +62,8 @@ export function TransactionForm({
 
   async function onSubmit(values: z.infer<typeof transactionSchema>) {
     try {
-      const { createTransaction } = await import("@/lib/actions");
+      const { createTransaction } =
+        await import("@/services/transactions/actions");
       await createTransaction({
         amount: Number(values.amount),
         type: values.type,

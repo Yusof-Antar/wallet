@@ -2,24 +2,22 @@ import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { AccountCard } from "@/components/dashboard/account-card";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
-import { getAccounts, getTransactions } from "@/lib/actions";
+import { getAccounts } from "@/services/accounts/actions";
+import { getTransactions } from "@/services/transactions/actions";
+import { getStatistics } from "@/services/statistics/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 
 export default async function DashboardPage() {
-  const [accounts, transactions] = await Promise.all([
+  const [accounts, transactions, stats] = await Promise.all([
     getAccounts(),
     getTransactions(5),
+    getStatistics("month"),
   ]);
 
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
-  // Mock monthly data for now until we have more transactions
-  const monthlyIncome = transactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const monthlyExpenses = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const monthlyIncome = stats.totalIncome;
+  const monthlyExpenses = stats.totalExpense;
 
   return (
     <div className="space-y-8 pb-8">

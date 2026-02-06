@@ -1,6 +1,6 @@
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
-import { getTransactions } from "@/lib/actions";
+import { getTransactions } from "@/services/transactions/actions";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
