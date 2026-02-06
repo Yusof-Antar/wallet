@@ -19,6 +19,7 @@ import {
 } from "@/services/settings/actions";
 import { Profile } from "@/types";
 import { Loader2 } from "lucide-react";
+import { AvatarUpload } from "@/components/settings/avatar-upload";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -99,17 +100,15 @@ export default function SettingsPage() {
             <CardDescription>Update your personal details.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage
-                  src={profile?.avatar_url || "https://github.com/shadcn.png"}
-                />
-                <AvatarFallback>
-                  {name.substring(0, 2).toUpperCase() || "UN"}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="outline">Change Avatar</Button>
-            </div>
+            <AvatarUpload
+              currentUrl={profile?.avatar_url || null}
+              name={name}
+              onSuccess={(newUrl: string) => {
+                setProfile((prev) =>
+                  prev ? { ...prev, avatar_url: newUrl } : null,
+                );
+              }}
+            />
 
             <div className="grid gap-2">
               <Label htmlFor="name">Display Name</Label>

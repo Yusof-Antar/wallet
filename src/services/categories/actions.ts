@@ -1,10 +1,10 @@
 "use server";
 
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 import { Category } from "@/types";
 
 export async function getCategories() {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")
