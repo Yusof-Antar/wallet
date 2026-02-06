@@ -13,6 +13,8 @@ import {
   ListTodo,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase-client";
+import { useRouter } from "next/navigation";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -25,6 +27,13 @@ const sidebarItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   return (
     <aside className="hidden h-screen w-64 flex-col border-r bg-background/80 backdrop-blur-xl md:flex fixed left-0 top-0 z-50">
@@ -66,6 +75,7 @@ export function Sidebar() {
       <div className="p-4 mt-auto border-t border-border/40">
         <Button
           variant="ghost"
+          onClick={handleSignOut}
           className="w-full justify-start gap-3 rounded-xl py-6 text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-semibold transition-all"
         >
           <LogOut className="h-5 w-5" />

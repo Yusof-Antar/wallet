@@ -7,6 +7,7 @@ import { getTransactions } from "@/services/transactions/actions";
 import { getStatistics } from "@/services/statistics/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
+import { cn } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const [accounts, transactions, stats] = await Promise.all([
@@ -18,6 +19,14 @@ export default async function DashboardPage() {
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
   const monthlyIncome = stats.totalIncome;
   const monthlyExpenses = stats.totalExpense;
+
+  // Real stats calculations
+  const daysInMonth = stats.chartData.length || 30;
+  const dailyAverage = monthlyExpenses / daysInMonth;
+  const savingsRate =
+    monthlyIncome > 0
+      ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100
+      : 0;
 
   return (
     <div className="space-y-8 pb-8">
@@ -69,19 +78,41 @@ export default async function DashboardPage() {
             <DashboardChart data={stats.chartData} />
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="col-span-3 border-none shadow-lg shadow-black/5 bg-card/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
+            <CardTitle className="text-xl font-black tracking-tight">
+              Quick Stats
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Daily Average</span>
-                <span className="font-semibold">$45.20</span>
+                <div>
+                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                    Daily Average
+                  </p>
+                  <p className="text-2xl font-black mt-1">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(dailyAverage)}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Savings Rate</span>
-                <span className="font-semibold text-emerald-500">+12%</span>
+              <div className="flex items-center justify-between border-t border-border/40 pt-6">
+                <div>
+                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                    Savings Rate
+                  </p>
+                  <p
+                    className={cn(
+                      "text-2xl font-black mt-1",
+                      savingsRate >= 0 ? "text-emerald-500" : "text-rose-500",
+                    )}
+                  >
+                    {savingsRate.toFixed(1)}%
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>

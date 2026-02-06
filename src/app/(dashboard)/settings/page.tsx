@@ -26,34 +26,40 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const data = await getUserSettings();
-        setProfile(data);
-        setName(data.full_name || "");
-        setCurrency(data.currency || "USD");
-      } catch (error) {
-        console.error("Failed to fetch settings:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     fetchData();
   }, []);
 
+  async function fetchData() {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getUserSettings();
+      setProfile(data);
+      setName(data.full_name || "");
+      setCurrency(data.currency || "USD");
+    } catch (err: any) {
+      console.error("Failed to fetch settings:", err);
+      setError(err.message || "Failed to load settings. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleSave = async () => {
     setIsSaving(true);
+    setError(null);
     try {
       await updateUserSettings({
         full_name: name,
         currency: currency,
       });
       // toast.success("Settings saved successfully");
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-      // toast.error("Failed to save settings");
+    } catch (err: any) {
+      console.error("Failed to save settings:", err);
+      setError(err.message || "Failed to save settings.");
     } finally {
       setIsSaving(false);
     }
@@ -63,6 +69,15 @@ export default function SettingsPage() {
     return (
       <div className="flex h-100 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-100 gap-4">
+        <p className="text-destructive font-semibold">{error}</p>
+        <Button onClick={fetchData}>Retry</Button>
       </div>
     );
   }

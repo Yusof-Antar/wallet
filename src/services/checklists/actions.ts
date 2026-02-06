@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 import { ChecklistItem } from "@/types";
 
 export async function getChecklistItems() {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("checklist_items")
     .select("*")
@@ -16,7 +16,7 @@ export async function getChecklistItems() {
 }
 
 export async function toggleChecklistItem(id: string, is_completed: boolean) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("checklist_items")
     .update({ is_completed })
@@ -27,7 +27,7 @@ export async function toggleChecklistItem(id: string, is_completed: boolean) {
 }
 
 export async function deleteChecklistItem(id: string) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("checklist_items")
     .delete()
@@ -35,4 +35,23 @@ export async function deleteChecklistItem(id: string) {
 
   if (error) throw error;
   revalidatePath("/checklists");
+}
+
+export async function addChecklistItem(
+  item: Omit<ChecklistItem, "id" | "is_completed" | "created_at" | "user_id">,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data, error } = await supabase
+    .from("checklist_items")
+    .insert([{ ...item, user_id: user.id }])
+    .select();
+
+  if (error) throw error;
+  revalidatePath("/checklists");
+  return data[0];
 }

@@ -7,16 +7,43 @@ import { Plus, Trash2, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   getChecklistItems,
   toggleChecklistItem,
   deleteChecklistItem,
+  addChecklistItem,
 } from "@/services/checklists/actions";
 import { ChecklistItem } from "@/types";
 
 export default function ChecklistsPage() {
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [newItem, setNewItem] = useState({
+    name: "",
+    price: "",
+    category: "",
+    frequency: "monthly" as ChecklistItem["frequency"],
+  });
 
   useEffect(() => {
     fetchItems();
@@ -55,6 +82,31 @@ export default function ChecklistsPage() {
     }
   };
 
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAdding(true);
+    try {
+      const addedItem = await addChecklistItem({
+        name: newItem.name,
+        price: parseFloat(newItem.price),
+        category: newItem.category,
+        frequency: newItem.frequency,
+      });
+      setItems([addedItem, ...items]);
+      setIsDialogOpen(false);
+      setNewItem({
+        name: "",
+        price: "",
+        category: "",
+        frequency: "monthly",
+      });
+    } catch (error) {
+      console.error("Failed to add item:", error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   return (
     <div className="space-y-6 text-foreground">
       <div className="flex items-center justify-between">
@@ -66,10 +118,86 @@ export default function ChecklistsPage() {
             Track your recurring expenses and bucket list
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Item
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Item
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Checklist Item</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleAdd} className="space-y-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={newItem.name}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, name: e.target.value })
+                  }
+                  placeholder="e.g. Netflix Subscription"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  value={newItem.price}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, price: e.target.value })
+                  }
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  value={newItem.category}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, category: e.target.value })
+                  }
+                  placeholder="e.g. Entertainment"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="frequency">Frequency</Label>
+                <Select
+                  value={newItem.frequency}
+                  onValueChange={(value: ChecklistItem["frequency"]) =>
+                    setNewItem({ ...newItem, frequency: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="one-time">One-time</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isAdding}>
+                  {isAdding && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isAdding ? "Adding..." : "Add Item"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {isLoading ? (

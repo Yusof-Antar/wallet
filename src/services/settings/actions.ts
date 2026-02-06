@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 import { Profile } from "@/types";
 
 export async function getUserSettings() {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -16,16 +16,29 @@ export async function getUserSettings() {
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
+
+  // If profile doesn't exist yet, return a skeleton
+  if (!data) {
+    return {
+      id: user.id,
+      email: user.email,
+      full_name:
+        user.user_metadata?.full_name || user.email?.split("@")[0] || "",
+      avatar_url: user.user_metadata?.avatar_url || null,
+      currency: "USD",
+    } as Profile;
+  }
+
   return data as Profile;
 }
 
 export async function updateUserSettings(
   settings: Partial<Omit<Profile, "id" | "email" | "updated_at">>,
 ) {
-  const supabase = createSupabaseClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

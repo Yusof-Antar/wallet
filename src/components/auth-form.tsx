@@ -60,7 +60,7 @@ export function AuthForm({ type }: AuthFormProps) {
         if (error) throw error;
         router.push("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: {
@@ -71,6 +71,90 @@ export function AuthForm({ type }: AuthFormProps) {
           },
         });
         if (error) throw error;
+
+        // Initialize default data for new user
+        if (data.user) {
+          // Add 2 default accounts
+          await supabase.from("accounts").insert([
+            {
+              user_id: data.user.id,
+              name: "Main Bank",
+              type: "bank",
+              balance: 0,
+              color: "#3b82f6",
+              icon: "landmark",
+            },
+            {
+              user_id: data.user.id,
+              name: "Cash Wallet",
+              type: "cash",
+              balance: 0,
+              color: "#10b981",
+              icon: "wallet",
+            },
+          ]);
+
+          // Add 8 categories (6 expenses, 2 income)
+          await supabase.from("categories").insert([
+            {
+              user_id: data.user.id,
+              name: "Salary",
+              type: "income",
+              icon: "briefcase",
+              color: "#10b981",
+            },
+            {
+              user_id: data.user.id,
+              name: "Investments",
+              type: "income",
+              icon: "trending-up",
+              color: "#8b5cf6",
+            },
+            {
+              user_id: data.user.id,
+              name: "Food & Dining",
+              type: "expense",
+              icon: "utensils",
+              color: "#f97316",
+            },
+            {
+              user_id: data.user.id,
+              name: "Transportation",
+              type: "expense",
+              icon: "bus",
+              color: "#3b82f6",
+            },
+            {
+              user_id: data.user.id,
+              name: "Housing",
+              type: "expense",
+              icon: "home",
+              color: "#ef4444",
+            },
+            {
+              user_id: data.user.id,
+              name: "Entertainment",
+              type: "expense",
+              icon: "clapperboard",
+              color: "#f43f5e",
+            },
+            {
+              user_id: data.user.id,
+              name: "Shopping",
+              type: "expense",
+              icon: "shopping-bag",
+              color: "#f59e0b",
+            },
+            {
+              user_id: data.user.id,
+              name: "Health",
+              type: "expense",
+              icon: "heart",
+              color: "#ec4899",
+            },
+          ]);
+        }
+
         router.push("/dashboard");
       }
       router.refresh();
