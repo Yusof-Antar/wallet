@@ -1,5 +1,6 @@
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
+import { AddCategoryDialog } from "@/components/categories/add-category-dialog";
 import { getTransactions } from "@/services/transactions/actions";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -33,7 +34,10 @@ export default async function TransactionsPage() {
             A detailed history of your money flow
           </p>
         </div>
-        <AddTransactionDialog />
+        <div className="flex items-center gap-2">
+          <AddCategoryDialog />
+          <AddTransactionDialog />
+        </div>
       </div>
 
       <div className="flex items-center gap-4">

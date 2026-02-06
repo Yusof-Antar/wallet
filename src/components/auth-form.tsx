@@ -66,7 +66,7 @@ export function AuthForm({ type }: AuthFormProps) {
           email: values.email,
           password: values.password,
           options: {
-            emailRedirectTo: `${location.origin}/auth/callback`,
+            emailRedirectTo: `${location.origin}/validated`,
             data: {
               full_name: values.email.split("@")[0], // Default name from email
             },
@@ -75,7 +75,95 @@ export function AuthForm({ type }: AuthFormProps) {
         if (error) throw error;
 
         // Initialize default data for new user
-        // ... (data initialization code) ...
+        if (data.user) {
+          const userId = data.user.id;
+
+          // 1. Create default accounts
+          const defaultAccounts = [
+            {
+              name: "Main Bank",
+              type: "bank",
+              balance: 0,
+              color: "#6366f1",
+              icon: "landmark",
+              is_included_in_balance: true,
+              user_id: userId,
+            },
+            {
+              name: "Cash Wallet",
+              type: "cash",
+              balance: 0,
+              color: "#10b981",
+              icon: "wallet",
+              is_included_in_balance: true,
+              user_id: userId,
+            },
+          ];
+
+          await supabase.from("accounts").insert(defaultAccounts);
+
+          // 2. Create default categories
+          const defaultCategories = [
+            {
+              name: "Salary",
+              type: "income",
+              icon: "briefcase",
+              color: "#10b981",
+              user_id: userId,
+            },
+            {
+              name: "Gifts",
+              type: "income",
+              icon: "gift",
+              color: "#ec4899",
+              user_id: userId,
+            },
+            {
+              name: "Food",
+              type: "expense",
+              icon: "utensils",
+              color: "#f97316",
+              user_id: userId,
+            },
+            {
+              name: "Transport",
+              type: "expense",
+              icon: "bus",
+              color: "#3b82f6",
+              user_id: userId,
+            },
+            {
+              name: "Rent",
+              type: "expense",
+              icon: "home",
+              color: "#8b5cf6",
+              user_id: userId,
+            },
+            {
+              name: "Entertainment",
+              type: "expense",
+              icon: "clapperboard",
+              color: "#f43f5e",
+              user_id: userId,
+            },
+            {
+              name: "Health",
+              type: "expense",
+              icon: "heart",
+              color: "#ef4444",
+              user_id: userId,
+            },
+            {
+              name: "Shopping",
+              type: "expense",
+              icon: "shopping-bag",
+              color: "#f59e0b",
+              user_id: userId,
+            },
+          ];
+
+          await supabase.from("categories").insert(defaultCategories);
+        }
 
         toast.success(
           "Account created! Please check your email for verification.",

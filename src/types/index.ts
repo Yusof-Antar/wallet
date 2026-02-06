@@ -23,6 +23,7 @@ export interface Account {
   balance: number;
   color: string;
   icon: string;
+  is_included_in_balance: boolean;
   created_at: string;
 }
 

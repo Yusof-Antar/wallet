@@ -4,10 +4,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Tag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -32,55 +31,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAccount } from "@/services/accounts/actions";
+import { createCategory } from "@/services/categories/actions";
 import { toast } from "sonner";
 
-const accountSchema = z.object({
-  name: z.string().min(1, "Account name is required"),
-  type: z.enum(["wallet", "bank", "cash", "savings", "other"]),
-  balance: z.string().refine((val) => !isNaN(Number(val)), {
-    message: "Balance must be a number",
-  }),
+const categorySchema = z.object({
+  name: z.string().min(1, "Category name is required"),
+  type: z.enum(["income", "expense"]),
+  icon: z.string().min(1, "Icon name is required"),
   color: z.string().min(1, "Color is required"),
-  icon: z.string().min(1, "Icon is required"),
-  is_included_in_balance: z.boolean(),
 });
 
-interface AddAccountDialogProps {
+interface AddCategoryDialogProps {
   children?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export function AddAccountDialog({ children }: AddAccountDialogProps) {
+export function AddCategoryDialog({
+  children,
+  onSuccess,
+}: AddCategoryDialogProps) {
   const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof accountSchema>>({
-    resolver: zodResolver(accountSchema),
+  const form = useForm<z.infer<typeof categorySchema>>({
+    resolver: zodResolver(categorySchema),
     defaultValues: {
       name: "",
-      type: "bank",
-      balance: "0",
+      type: "expense",
+      icon: "tag",
       color: "#6366f1",
-      icon: "Wallet",
-      is_included_in_balance: true,
     },
   });
 
-  async function onSubmit(values: z.infer<typeof accountSchema>) {
+  async function onSubmit(values: z.infer<typeof categorySchema>) {
     try {
-      await createAccount({
-        name: values.name,
-        type: values.type,
-        balance: Number(values.balance),
-        color: values.color,
-        icon: values.icon,
-        is_included_in_balance: values.is_included_in_balance,
-      });
-      toast.success("Account created successfully!");
+      await createCategory(values);
+      toast.success("Category created successfully!");
       form.reset();
       setOpen(false);
+      if (onSuccess) onSuccess();
     } catch (error) {
-      toast.error("Failed to create account. Please try again.");
-      console.error("Failed to create account:", error);
+      toast.error("Failed to create category.");
+      console.error("Failed to create category:", error);
     }
   }
 
@@ -88,17 +79,17 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button>
+          <Button variant="outline" size="sm">
             <Plus className="mr-2 h-4 w-4" />
-            Add Account
+            New Category
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Add Account</DialogTitle>
+          <DialogTitle>Add Category</DialogTitle>
           <DialogDescription>
-            Create a new account to track your finances.
+            Create a custom category for your transactions.
           </DialogDescription>
         </DialogHeader>
 
@@ -109,9 +100,9 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Account Name</FormLabel>
+                  <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Main Savings" {...field} />
+                    <Input placeholder="e.g. Subscriptions" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -135,11 +126,8 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="bank">Bank Account</SelectItem>
-                        <SelectItem value="wallet">Digital Wallet</SelectItem>
-                        <SelectItem value="cash">Cash</SelectItem>
-                        <SelectItem value="savings">Savings</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="expense">Expense</SelectItem>
+                        <SelectItem value="income">Income</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -149,12 +137,12 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
 
               <FormField
                 control={form.control}
-                name="balance"
+                name="icon"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Initial Balance</FormLabel>
+                    <FormLabel>Icon</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input placeholder="e.g. tag, home, car" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,22 +152,21 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
 
             <FormField
               control={form.control}
-              name="is_included_in_balance"
+              name="color"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+                <FormItem>
+                  <FormLabel>Color</FormLabel>
                   <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        className="w-12 h-10 p-1"
+                        {...field}
+                      />
+                      <Input className="flex-1" {...field} />
+                    </div>
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Include in total balance</FormLabel>
-                    <p className="text-[12px] text-muted-foreground">
-                      This account's balance will be added to your total net
-                      worth.
-                    </p>
-                  </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -192,7 +179,7 @@ export function AddAccountDialog({ children }: AddAccountDialogProps) {
               {form.formState.isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Create Account
+              Create Category
             </Button>
           </form>
         </Form>

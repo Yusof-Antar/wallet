@@ -16,7 +16,9 @@ export default async function DashboardPage() {
     getStatistics("month"),
   ]);
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+  const totalBalance = accounts
+    .filter((acc) => acc.is_included_in_balance)
+    .reduce((sum, acc) => sum + acc.balance, 0);
   const monthlyIncome = stats.totalIncome;
   const monthlyExpenses = stats.totalExpense;
 

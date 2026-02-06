@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS public.accounts (
   balance NUMERIC DEFAULT 0 NOT NULL,
   color TEXT NOT NULL,
   icon TEXT NOT NULL,
+  is_included_in_balance BOOLEAN DEFAULT TRUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -59,8 +60,8 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Categories are viewable by everyone if global or if they own it') THEN
-        CREATE POLICY "Categories are viewable by everyone if global or if they own it" ON public.categories FOR SELECT USING (user_id IS NULL OR auth.uid() = user_id);
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can only view their own categories') THEN
+        CREATE POLICY "Users can only view their own categories" ON public.categories FOR SELECT USING (auth.uid() = user_id);
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can manage their own categories') THEN
         CREATE POLICY "Users can manage their own categories" ON public.categories FOR ALL USING (auth.uid() = user_id);
